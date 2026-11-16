@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Actuarial exam preparation resources for IFoA, SOA, and IAI students.">
+  <title>Actuary Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-black">
+
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="logo">
+      <p>Master Your Actuarial Exams with Confidence.</p>
+    </div>
+    <div class="nav-right-cluster">
+      <p class="nav-subtitle">Structured study guides, past papers, and mock exams for IFoA, SOA &amp; IAI.</p>
+      <div id="nav-auth-badge" class="nav-auth-badge" style="display: none;">
+        <span id="nav-member-label">Verified Member</span>
+        <button type="button" id="nav-logout-btn" class="nav-logout-btn">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Full-Width Hero Section -->
+  <section class="hero">
+    <div class="hero-wrapper full-window">
+      <!-- Past Papers Grid -->
+      <div class="hero-right full-width">
+        <div id="papers-section" class="papers-section">
+          <div class="papers-header-bar">
+            <h2 class="section-title">Past Papers</h2>
+            <span id="active-subject-badge" class="active-subject-badge">Select Institute &amp; Subject below</span>
+            <!-- Exam Expert Button -->
+            <button type="button" id="exam-expert-btn" class="exam-expert-top-btn" style="display: none;" title="Local Exam Expert Analysis">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <span>Exam Expert</span>
+            </button>
+          </div>
+          <div id="papers-container" class="papers-container">
+            <div class="pane-status welcome-banner">
+              <strong>Welcome to Actuary Portal</strong><br><br>
+              Click the <strong>"Select Subject"</strong> icon at the bottom-right to choose your institute and subject, or open <strong>"Local PDFs"</strong> to manage your study archive.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full-Screen Split Viewer & Exam Expert Modal -->
+  <div id="split-modal" class="split-modal" role="dialog" aria-modal="true" style="display: none;">
+    <div class="split-topbar">
+      <div class="split-title-group">
+        <span id="split-badge" class="split-badge">IAI &bull; CM1</span>
+        <h3 id="split-session-title">2026 Examination Series — April</h3>
+      </div>
+
+      <div class="split-controls">
+        <a id="dl-question" class="dl-top-btn" download style="display: none;">Download Question</a>
+        <a id="dl-answer" class="dl-top-btn" download style="display: none;">Download Solution</a>
+        <button type="button" class="mode-btn active" data-mode="split">Split View</button>
+        <button type="button" class="mode-btn" data-mode="question">Question Paper</button>
+        <button type="button" class="mode-btn" data-mode="answer">Solution Paper</button>
+        <button type="button" id="close-split-btn" class="close-split-btn">Close (Esc)</button>
+      </div>
+    </div>
+
+    <div id="split-workspace" class="split-workspace">
+      <!-- Left Pane: Question Paper / Expert Source -->
+      <div id="pane-question" class="split-pane">
+        <div id="body-question" class="pane-body"></div>
+      </div>
+
+      <!-- Draggable Resizer -->
+      <div id="split-resizer" class="split-resizer" title="Drag to resize panes"></div>
+
+      <!-- Right Pane: Solution Paper / Expert Dashboard -->
+      <div id="pane-answer" class="split-pane">
+        <div id="body-answer" class="pane-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom-Right Floating Dock -->
+  <div class="floating-dock">
+    <!-- Popover 1: Color Themes Card -->
+    <div id="theme-card" class="options-popover glass-panel" style="display: none;">
+      <div class="options-popover-header">
+        <strong>Choose Color Theme</strong>
+        <button type="button" id="theme-close-btn" class="feedback-close-btn" aria-label="Close themes">&times;</button>
+      </div>
+      <div class="verified-info">
+        <p>Select your preferred glassmorphic color vibe:</p>
+        <div class="theme-swatch-grid">
+          <button type="button" class="theme-btn active" data-theme="black" style="background: linear-gradient(135deg, #000000, #1f1f1f);">Deep Black</button>
+          <button type="button" class="theme-btn" data-theme="charcoal-forest" style="background: linear-gradient(135deg, #171717, #06110c);">Charcoal &amp; Forest</button>
+          <button type="button" class="theme-btn" data-theme="lemon-lavender" style="background: linear-gradient(135deg, #171717, #8B5CF6);">Lemon &amp; Lavender</button>
+          <button type="button" class="theme-btn" data-theme="powder-peach" style="background: linear-gradient(135deg, #8DB9F0, #F5B69E);">Powder &amp; Peach</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popover 2: Institute & Subject Selector Card -->
+    <div id="selector-card-popover" class="options-popover glass-panel" style="display: none;">
+      <div class="options-popover-header">
+        <strong>Choose Exam &amp; Subject</strong>
+        <button type="button" id="selector-close-btn" class="feedback-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="verified-info">
+        <div class="form-group">
+          <label for="institute-select">Choose Institute</label>
+          <select id="institute-select">
+            <option value="" disabled selected>Select Institute</option>
+            <option value="ifoa">IFoA (UK)</option>
+            <option value="iai">IAI (India)</option>
+            <option value="soa">SOA (US)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="subject-select">Choose Subject</label>
+          <select id="subject-select" disabled>
+            <option value="" disabled selected>Select Institute first</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popover 3: Local Folder & Member Login Card -->
+    <div id="verified-card" class="options-popover glass-emerald" style="display: none;">
+      <div class="options-popover-header">
+        <strong id="verified-title">Local Folder Mode</strong>
+        <button type="button" id="options-close-btn" class="feedback-close-btn" aria-label="Close options">&times;</button>
+      </div>
+
+      <div class="verified-info">
+        <p id="verified-sub">Loading &amp; saving files directly in local pdfs/ archive.</p>
+
+        <div id="local-upload-wrap" class="local-upload-wrap">
+          <label for="local-pdf-input" class="attach-btn">Attach / Save Files</label>
+          <input type="file" id="local-pdf-input" accept=".pdf,.xlsx,.xls,.csv" multiple style="display: none;">
+          <span id="attached-count" class="attached-count">Drag &amp; drop PDFs/Excel here or click button</span>
+        </div>
+
+        <div class="options-actions-row">
+          <button type="button" id="switch-account-btn" class="switch-btn">Verify Login</button>
+        </div>
+
+        <!-- Member Login Form Inside Popover -->
+        <div id="login-card" class="popover-login-card" style="display: none;">
+          <div class="login-header">
+            <h3>MEMBER LOGIN</h3>
+            <span id="portal-badge" class="portal-badge">IAI (India) Portal</span>
+          </div>
+
+          <form id="member-login-form" autocomplete="off">
+            <div class="input-row">
+              <span class="input-icon">&#128100;</span>
+              <input type="text" id="member-id" aria-label="Membership ID or Email" placeholder="Membership ID / Email" required>
+            </div>
+
+            <div class="input-row">
+              <span class="input-icon">&#128274;</span>
+              <input type="password" id="member-pass" aria-label="Portal Password" placeholder="Portal Password" required>
+            </div>
+
+            <div id="captcha-section" class="captcha-row">
+              <div class="captcha-box">
+                <img id="captcha-img" alt="Live Portal CAPTCHA" style="display: none;">
+                <span id="captcha-status" class="captcha-status">Loading...</span>
+              </div>
+              <button type="button" id="refresh-captcha-btn" class="refresh-btn" title="Refresh Live CAPTCHA">&#8635;</button>
+              <input type="text" id="captcha-answer" class="captcha-input" aria-label="CAPTCHA Answer" placeholder="Enter answer">
+            </div>
+
+            <button type="submit" id="sign-in-btn" class="sign-in-btn" disabled>SIGN IN</button>
+
+            <div class="login-footer">
+              <span id="login-msg" class="login-msg"></span>
+              <a id="forgot-link" href="#" target="_blank" rel="noopener">Forgot Password?</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popover 4: Message Feedback Card -->
+    <div id="feedback-card" class="feedback-card" style="display: none;">
+      <div class="feedback-card-header">
+        <strong>Message Support</strong>
+        <button type="button" id="feedback-close-btn" class="feedback-close-btn" aria-label="Close message box">&times;</button>
+      </div>
+      <form id="feedback-msg-form" class="feedback-msg-form">
+        <select id="feedback-category" aria-label="Message Category">
+          <option value="Website Idea">Website Idea / Feature</option>
+          <option value="Missing Paper">Request Missing Paper</option>
+          <option value="Feedback">Say Thanks / Feedback</option>
+        </select>
+        <input type="text" id="feedback-sender" placeholder="Your Name / Email (optional)">
+        <textarea id="feedback-text" rows="3" placeholder="Send me your idea or paper request..." required></textarea>
+        <button type="submit" id="feedback-send-btn">Send Message</button>
+        <div id="feedback-status" class="feedback-status"></div>
+      </form>
+    </div>
+
+    <!-- Bottom-Right Trigger Buttons Row -->
+    <div class="dock-buttons-row">
+      <button type="button" id="theme-toggle-btn" class="dock-icon-btn" title="Choose Color Theme">
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+        <span>Theme</span>
+      </button>
+
+      <button type="button" id="selector-toggle-btn" class="dock-icon-btn" title="Select Institute &amp; Subject">
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Select Subject</span>
+      </button>
+
+      <button type="button" id="options-toggle-btn" class="dock-icon-btn" title="Local Files &amp; Portal Login">
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+        <span>Local PDFs</span>
+      </button>
+
+      <button type="button" id="feedback-toggle-btn" class="feedback-toggle-btn" title="Message Support">
+        <span class="status-dot"></span> Message
+      </button>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
