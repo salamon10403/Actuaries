@@ -1,0 +1,19 @@
+{
+  "name": "actuarial-past-papers-portal",
+  "version": "1.8.0",
+  "description": "Actuarial Exam Past Papers Portal with Exam Expert Button, Default Black Theme, and Local Archive",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "postinstall": "npx playwright install chromium"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "playwright": "^1.48.0"
+  }
+}

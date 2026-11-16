@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Actuarial exam preparation resources for IFoA, SOA, and IAI students.">
-  <title>Actuary Hub</title>
+  <title>Actuary — Official Past Papers & Split Viewer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-black">
@@ -26,19 +26,25 @@
   <!-- Full-Width Hero Section -->
   <section class="hero">
     <div class="hero-wrapper full-window">
-      <!-- Past Papers Grid -->
+      <!-- Past Papers Grid (Full Window Width) -->
       <div class="hero-right full-width">
-        <div id="papers-section" class="papers-section">
+        <div id="papers-section" class="papers-section" style="display: none;">
           <div class="papers-header-bar">
             <h2 class="section-title">Past Papers</h2>
-            <span id="active-subject-badge" class="active-subject-badge">Select Institute &amp; Subject below</span>
-            <!-- Exam Expert Button -->
-            <button type="button" id="exam-expert-btn" class="exam-expert-top-btn" style="display: none;" title="Local Exam Expert Analysis">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              <span>Exam Expert</span>
+            <span id="active-subject-badge" class="active-subject-badge">IAI &bull; CS1</span>
+            <!-- Exam Expert Button Placed Here -->
+            <button type="button" id="exam-expert-btn" class="exam-expert-btn" style="display: none;">
+              Exam Expert 🧠
             </button>
           </div>
-          <div id="papers-container" class="papers-container">
+          <div id="papers-container" class="papers-container"></div>
+        </div>
+        <div id="welcome-section" class="papers-section">
+          <div class="papers-header-bar">
+            <h2 class="section-title">Past Papers</h2>
+            <span class="active-subject-badge">Select Institute &amp; Subject below</span>
+          </div>
+          <div class="papers-container">
             <div class="pane-status welcome-banner">
               <strong>Welcome to Actuary Portal</strong><br><br>
               Click the <strong>"Select Subject"</strong> icon at the bottom-right to choose your institute and subject, or open <strong>"Local PDFs"</strong> to manage your study archive.
@@ -49,7 +55,7 @@
     </div>
   </section>
 
-  <!-- Full-Screen Split Viewer & Exam Expert Modal -->
+  <!-- Full-Screen Split Viewer Modal -->
   <div id="split-modal" class="split-modal" role="dialog" aria-modal="true" style="display: none;">
     <div class="split-topbar">
       <div class="split-title-group">
@@ -68,7 +74,7 @@
     </div>
 
     <div id="split-workspace" class="split-workspace">
-      <!-- Left Pane: Question Paper / Expert Source -->
+      <!-- Left Pane: Question Paper -->
       <div id="pane-question" class="split-pane">
         <div id="body-question" class="pane-body"></div>
       </div>
@@ -76,7 +82,7 @@
       <!-- Draggable Resizer -->
       <div id="split-resizer" class="split-resizer" title="Drag to resize panes"></div>
 
-      <!-- Right Pane: Solution Paper / Expert Dashboard -->
+      <!-- Right Pane: Solution Paper -->
       <div id="pane-answer" class="split-pane">
         <div id="body-answer" class="pane-body"></div>
       </div>
@@ -85,6 +91,7 @@
 
   <!-- Bottom-Right Floating Dock -->
   <div class="floating-dock">
+
     <!-- Popover 1: Color Themes Card -->
     <div id="theme-card" class="options-popover glass-panel" style="display: none;">
       <div class="options-popover-header">
@@ -140,7 +147,7 @@
         <div id="local-upload-wrap" class="local-upload-wrap">
           <label for="local-pdf-input" class="attach-btn">Attach / Save Files</label>
           <input type="file" id="local-pdf-input" accept=".pdf,.xlsx,.xls,.csv" multiple style="display: none;">
-          <span id="attached-count" class="attached-count">Drag &amp; drop PDFs/Excel here or click button</span>
+          <span id="attached-count" class="attached-count">Drag &amp; drop files here or click button</span>
         </div>
 
         <div class="options-actions-row">
@@ -185,10 +192,10 @@
       </div>
     </div>
 
-    <!-- Popover 4: Message Feedback Card -->
+    <!-- Popover 4: Message Salamon Feedback Card -->
     <div id="feedback-card" class="feedback-card" style="display: none;">
       <div class="feedback-card-header">
-        <strong>Message Support</strong>
+        <strong>Message Salamon</strong>
         <button type="button" id="feedback-close-btn" class="feedback-close-btn" aria-label="Close message box">&times;</button>
       </div>
       <form id="feedback-msg-form" class="feedback-msg-form">
@@ -207,24 +214,36 @@
     <!-- Bottom-Right Trigger Buttons Row -->
     <div class="dock-buttons-row">
       <button type="button" id="theme-toggle-btn" class="dock-icon-btn" title="Choose Color Theme">
-        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          <path d="M2 12h20"></path>
+        </svg>
         <span>Theme</span>
       </button>
 
       <button type="button" id="selector-toggle-btn" class="dock-icon-btn" title="Select Institute &amp; Subject">
-        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
         <span>Select Subject</span>
       </button>
 
       <button type="button" id="options-toggle-btn" class="dock-icon-btn" title="Local Files &amp; Portal Login">
-        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+        <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          <line x1="12" y1="11" x2="12" y2="17"></line>
+          <line x1="9" y1="14" x2="15" y2="14"></line>
+        </svg>
         <span>Local PDFs</span>
       </button>
 
-      <button type="button" id="feedback-toggle-btn" class="feedback-toggle-btn" title="Message Support">
+      <button type="button" id="feedback-toggle-btn" class="feedback-toggle-btn" title="Message Salamon">
         <span class="status-dot"></span> Message
       </button>
     </div>
+
   </div>
 
   <script src="./script.js"></script>
