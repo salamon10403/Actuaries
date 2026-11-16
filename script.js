@@ -530,81 +530,37 @@ async function loadPdfPane(type, institute, subject, year, month) {
   const subUpper  = subject.toUpperCase();
   const monLower  = month.toLowerCase();
 
-  if (authState.skipped) {
-    const attachedUrl = findAttachedPdf(subUpper, year, monLower, type);
-    if (attachedUrl) {
-      const isSpreadsheet = /\.(xlsx|xls|csv)$/i.test(attachedUrl);
-      if (isSpreadsheet) {
-        bodyEl.innerHTML = `<div class="pane-status"><strong>Spreadsheet Attached</strong><br><br>Excel and CSV files can be downloaded directly for modeling.<br><br><a href="${attachedUrl}" download class="attach-btn" style="margin-top:12px; display:inline-block;">Download File</a></div>`;
-      } else {
-        bodyEl.innerHTML = `<iframe src="${attachedUrl}#toolbar=1&view=FitH" title="${type} file"></iframe>`;
-      }
-      dlTopBtn.href = attachedUrl;
-      dlTopBtn.download = `${subUpper}_${year}_${monLower}_${type}`;
-      dlTopBtn.style.display = "inline-block";
-      return;
-    }
+  // Construct the exact filename pattern matching your GitHub repo (e.g., IAI_CA1_2005_Jun_QP.pdf)
+  const suffix = type === "question" ? "QP" : "Sol";
+  const fileName = `${instUpper}_${subUpper}_${year}_${monLower}_${suffix}.pdf`;
+  const staticPdfUrl = `./pdfs/${instUpper}/${fileName}`;
 
-    const params = new URLSearchParams({
-      institute: instUpper,
-      subject: subUpper,
-      year,
-      month: monLower,
-      type
-    });
-    const localApiUrl = `${API_BASE}/api/local-paper?${params.toString()}`;
-    bodyEl.innerHTML = `<div class="pane-status">Searching <code>pdfs/${instUpper}/</code> for ${subUpper} ${month} ${year}...</div>`;
-
-    try {
-      const resp = await fetch(localApiUrl);
-      if (!resp.ok) throw new Error("File not found.");
-
-      const contentType = resp.headers.get("content-type") || "";
-      const blob = await resp.blob();
-      const blobUrl = setPaneBlob(type, blob);
-
-      if (contentType.includes("spreadsheet") || contentType.includes("excel") || contentType.includes("csv")) {
-        bodyEl.innerHTML = `<div class="pane-status"><strong>Spreadsheet Loaded</strong><br><br>Click below to download and open in Excel / LibreOffice.<br><br><a href="${blobUrl}" download="${subUpper}_${year}_${monLower}" class="attach-btn" style="margin-top:12px; display:inline-block;">Download File</a></div>`;
-      } else {
-        bodyEl.innerHTML = `<iframe src="${blobUrl}#toolbar=1&view=FitH" title="${type} PDF"></iframe>`;
-      }
-
-      dlTopBtn.href = blobUrl;
-      dlTopBtn.download = `${subUpper}_${year}_${monLower}`;
-      dlTopBtn.style.display = "inline-block";
-    } catch (_) {
-      bodyEl.innerHTML = `<div class="pane-status"><strong>File Not Found</strong><br><br>No matching file found for ${subUpper} (${month} ${year}) in <code>pdfs/${instUpper}/</code>.</div>`;
-    }
-    return;
-  }
-
-  bodyEl.innerHTML = `<div class="pane-status">Downloading real ${type} file from ${instUpper} portal...</div>`;
+  bodyEl.innerHTML = `<div class="pane-status">Loading ${subUpper} ${month} ${year} (${type})...</div>`;
 
   try {
-    const params = new URLSearchParams({
-      sessionToken: authState.sessionToken,
-      institute: instUpper,
-      subject: subUpper,
-      year,
-      month: monLower,
-      type
-    });
-
-    const resp = await fetch(`${API_BASE}/api/paper?${params.toString()}`);
-    if (!resp.ok) {
-      const errData = await resp.json().catch(() => ({}));
-      throw new Error(errData.error || `HTTP ${resp.status}`);
-    }
+    // Attempt to fetch directly from the static GitHub Pages file structure
+    const resp = await fetch(staticPdfUrl);
+    if (!resp.ok) throw new Error("File not found in static folder.");
 
     const blob = await resp.blob();
     const blobUrl = setPaneBlob(type, blob);
 
     bodyEl.innerHTML = `<iframe src="${blobUrl}#toolbar=1&view=FitH" title="${type} PDF"></iframe>`;
     dlTopBtn.href = blobUrl;
-    dlTopBtn.download = `${subUpper}_${year}_${monLower}`;
+    dlTopBtn.download = fileName;
     dlTopBtn.style.display = "inline-block";
-  } catch (err) {
-    bodyEl.innerHTML = `<div class="pane-status"><strong>Could not load file:</strong><br>${err.message}</div>`;
+  } catch (_) {
+    // Fallback: check manual browser memory attachments if any
+    const attachedUrl = findAttachedPdf(subUpper, year, monLower, type);
+    if (attachedUrl) {
+      bodyEl.innerHTML = `<iframe src="${attachedUrl}#toolbar=1&view=FitH" title="${type} file"></iframe>`;
+      dlTopBtn.href = attachedUrl;
+      dlTopBtn.download = fileName;
+      dlTopBtn.style.display = "inline-block";
+      return;
+    }
+
+    bodyEl.innerHTML = `<div class="pane-status"><strong>File Not Found</strong><br><br>Could not locate <code>${fileName}</code> in <code>pdfs/${instUpper}/</code>. Please check file naming conventions.</div>`;
   }
 }
 
