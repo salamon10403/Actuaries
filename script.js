@@ -233,19 +233,36 @@ async function handleLocalFilesSelected(fileList) {
   if (files.length === 0) return;
 
   const instUpper = (authState.institute || instituteSelect.value || "IAI").toUpperCase();
-  attachedCount.textContent = `Saving ${files.length} file(s) to browser memory...`;
+  attachedCount.textContent = `Saving ${files.length} file(s) to pdfs/${instUpper}/...`;
 
-  let savedCount = 0;
+  let savedToDisk = 0;
+
   for (const file of files) {
     const key = file.name.toLowerCase();
     if (attachedFilesMap.has(key)) {
       URL.revokeObjectURL(attachedFilesMap.get(key));
     }
     attachedFilesMap.set(key, URL.createObjectURL(file));
-    savedCount++;
+
+    try {
+      const params = new URLSearchParams({
+        institute: instUpper,
+        filename: file.name
+      });
+      const resp = await fetch(`${API_BASE}/api/upload-local-pdfs?${params.toString()}`, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file
+      });
+      if (resp.ok) savedToDisk++;
+    } catch (_) {}
   }
 
-  attachedCount.textContent = `${savedCount} file(s) attached in browser memory`;
+  if (savedToDisk > 0) {
+    attachedCount.textContent = `${savedToDisk} file(s) saved permanently to pdfs/${instUpper}/`;
+  } else {
+    attachedCount.textContent = `${attachedFilesMap.size} file(s) attached in memory`;
+  }
 
   if (authState.skipped && authState.institute && subjectSelect.value) {
     await renderAvailableYears(instUpper, subjectSelect.value);
@@ -308,7 +325,7 @@ async function initPortalSession(inst) {
     signInBtn.disabled = false;
   } catch (err) {
     captchaStatus.textContent = "Offline";
-    loginMsg.textContent = `${err.message} (Local static files mode active)`;
+    loginMsg.textContent = `${err.message} (Local files mode remains active)`;
   }
 }
 
@@ -361,7 +378,7 @@ loginForm.addEventListener("submit", async (e) => {
     document.getElementById("verified-sub").textContent = "Streaming live papers directly from the official portal.";
 
     navAuthBadge.style.display = "flex";
-    navMemberLabel.textContent = `${data.portalName} ID: ${data.memberId}`;
+    navMemberLabel.textContent = `${data.portalName} • ID: ${data.memberId}`;
 
     if (instituteSelect.value !== authState.institute) {
       instituteSelect.value = authState.institute;
@@ -406,28 +423,31 @@ async function renderAvailableYears(institute, subject) {
   welcomeSection.style.display = "none";
   papersSection.style.display = "flex";
 
-  const yearSet = new Set();
-  const subUpper = subject.toUpperCase();
-  const instUpper = institute.toUpperCase();
+  let availableYears = [];
 
-  for (const fileName of attachedFilesMap.keys()) {
-    if (fileName.includes(subUpper.toLowerCase())) {
-      const match = fileName.match(/(20\d{2}|19\d{2})/);
-      if (match) yearSet.add(Number(match[1]));
+  if (authState.skipped) {
+    const yearSet = new Set();
+    try {
+      const resp = await fetch(`${API_BASE}/api/local-paper-list?institute=${institute}&subject=${subject}`);
+      const data = await resp.json();
+      (data.years || []).forEach(y => yearSet.add(Number(y)));
+    } catch (_) {}
+
+    const subLower = subject.toLowerCase();
+    for (const fileName of attachedFilesMap.keys()) {
+      if (fileName.includes(subLower)) {
+        const match = fileName.match(/(20\d{2}|19\d{2})/);
+        if (match) yearSet.add(Number(match[1]));
+      }
     }
-  }
-
-  if (yearSet.size === 0) {
+    availableYears = Array.from(yearSet).sort((a, b) => b - a);
+  } else {
     const currYear = new Date().getFullYear();
-    for (let y = currYear; y >= 2005; y--) {
-      yearSet.add(y);
-    }
+    for (let y = currYear; y >= currYear - 12; y--) availableYears.push(y);
   }
-
-  const availableYears = Array.from(yearSet).sort((a, b) => b - a);
 
   if (availableYears.length === 0) {
-    papersContainer.innerHTML = `<div class="pane-status welcome-banner">No files found for <strong>${subject}</strong> in <code>pdfs/${instUpper}/</code>.</div>`;
+    papersContainer.innerHTML = `<div class="pane-status welcome-banner">No downloaded files found for <strong>${subject}</strong> in <code>pdfs/${institute}/</code>. Click the <strong>Local PDFs</strong> button at the bottom-right to attach files.</div>`;
     return;
   }
 
@@ -448,7 +468,7 @@ async function renderAvailableYears(institute, subject) {
       box.type = "button";
       box.className = "month-box";
       box.innerHTML = `<span>${month}</span>`;
-      box.addEventListener("click", () => openSplitViewer(instUpper, subUpper, year, month));
+      box.addEventListener("click", () => openSplitViewer(institute, subject, year, month));
       row.appendChild(box);
     });
 
@@ -510,39 +530,81 @@ async function loadPdfPane(type, institute, subject, year, month) {
   const subUpper  = subject.toUpperCase();
   const monLower  = month.toLowerCase();
 
-  const attachedUrl = findAttachedPdf(subUpper, year, monLower, type);
-  if (attachedUrl) {
-    const isSpreadsheet = /\.(xlsx|xls|csv)$/i.test(attachedUrl);
-    if (isSpreadsheet) {
-      bodyEl.innerHTML = `<div class="pane-status"><strong>Spreadsheet Attached</strong><br><br><a href="${attachedUrl}" download class="attach-btn" style="margin-top:12px; display:inline-block;">Download File</a></div>`;
-    } else {
-      bodyEl.innerHTML = `<iframe src="${attachedUrl}#toolbar=1&view=FitH" title="${type} file"></iframe>`;
+  if (authState.skipped) {
+    const attachedUrl = findAttachedPdf(subUpper, year, monLower, type);
+    if (attachedUrl) {
+      const isSpreadsheet = /\.(xlsx|xls|csv)$/i.test(attachedUrl);
+      if (isSpreadsheet) {
+        bodyEl.innerHTML = `<div class="pane-status"><strong>Spreadsheet Attached</strong><br><br>Excel and CSV files can be downloaded directly for modeling.<br><br><a href="${attachedUrl}" download class="attach-btn" style="margin-top:12px; display:inline-block;">Download File</a></div>`;
+      } else {
+        bodyEl.innerHTML = `<iframe src="${attachedUrl}#toolbar=1&view=FitH" title="${type} file"></iframe>`;
+      }
+      dlTopBtn.href = attachedUrl;
+      dlTopBtn.download = `${subUpper}_${year}_${monLower}_${type}`;
+      dlTopBtn.style.display = "inline-block";
+      return;
     }
-    dlTopBtn.href = attachedUrl;
-    dlTopBtn.download = `${subUpper}_${year}_${monLower}_${type}`;
-    dlTopBtn.style.display = "inline-block";
+
+    const params = new URLSearchParams({
+      institute: instUpper,
+      subject: subUpper,
+      year,
+      month: monLower,
+      type
+    });
+    const localApiUrl = `${API_BASE}/api/local-paper?${params.toString()}`;
+    bodyEl.innerHTML = `<div class="pane-status">Searching <code>pdfs/${instUpper}/</code> for ${subUpper} ${month} ${year}...</div>`;
+
+    try {
+      const resp = await fetch(localApiUrl);
+      if (!resp.ok) throw new Error("File not found.");
+
+      const contentType = resp.headers.get("content-type") || "";
+      const blob = await resp.blob();
+      const blobUrl = setPaneBlob(type, blob);
+
+      if (contentType.includes("spreadsheet") || contentType.includes("excel") || contentType.includes("csv")) {
+        bodyEl.innerHTML = `<div class="pane-status"><strong>Spreadsheet Loaded</strong><br><br>Click below to download and open in Excel / LibreOffice.<br><br><a href="${blobUrl}" download="${subUpper}_${year}_${monLower}" class="attach-btn" style="margin-top:12px; display:inline-block;">Download File</a></div>`;
+      } else {
+        bodyEl.innerHTML = `<iframe src="${blobUrl}#toolbar=1&view=FitH" title="${type} PDF"></iframe>`;
+      }
+
+      dlTopBtn.href = blobUrl;
+      dlTopBtn.download = `${subUpper}_${year}_${monLower}`;
+      dlTopBtn.style.display = "inline-block";
+    } catch (_) {
+      bodyEl.innerHTML = `<div class="pane-status"><strong>File Not Found</strong><br><br>No matching file found for ${subUpper} (${month} ${year}) in <code>pdfs/${instUpper}/</code>.</div>`;
+    }
     return;
   }
 
-  const suffix = type === "question" ? "QP" : "Sol";
-  const fileName = `${instUpper}_${subUpper}_${year}_${monLower}_${suffix}.pdf`;
-  const staticPdfUrl = `./pdfs/${instUpper}/${fileName}`;
-
-  bodyEl.innerHTML = `<div class="pane-status">Loading ${subUpper} ${month} ${year} (${type})...</div>`;
+  bodyEl.innerHTML = `<div class="pane-status">Downloading real ${type} file from ${instUpper} portal...</div>`;
 
   try {
-    const resp = await fetch(staticPdfUrl);
-    if (!resp.ok) throw new Error("File not found in static folder.");
+    const params = new URLSearchParams({
+      sessionToken: authState.sessionToken,
+      institute: instUpper,
+      subject: subUpper,
+      year,
+      month: monLower,
+      type
+    });
+
+    const resp = await fetch(`${API_BASE}/api/paper?${params.toString()}`);
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${resp.status}`);
+    }
 
     const blob = await resp.blob();
     const blobUrl = setPaneBlob(type, blob);
 
     bodyEl.innerHTML = `<iframe src="${blobUrl}#toolbar=1&view=FitH" title="${type} PDF"></iframe>`;
     dlTopBtn.href = blobUrl;
-    dlTopBtn.download = fileName;
+    dlTopBtn.download = `${subUpper}_${year}_${monLower}`;
     dlTopBtn.style.display = "inline-block";
-  } catch (_) {
-    bodyEl.innerHTML = `<div class="pane-status"><strong>File Not Found</strong><br><br>Could not locate <code>${fileName}</code> in <code>pdfs/${instUpper}/</code>.</div>`;
+  } catch (err) {
+    bodyEl.innerHTML = `<div class="pane-status"><strong>Could not load file:</strong><br>${err.message}</div>`;
   }
 }
 
@@ -616,6 +678,13 @@ document.addEventListener("keydown", (e) => {
 });
 
 async function resetAuthSession() {
+  if (authState.sessionToken) {
+    await fetch(`${API_BASE}/api/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionToken: authState.sessionToken })
+    }).catch(() => {});
+  }
   authState = { sessionToken: null, authenticated: false, skipped: true, institute: null, memberId: null };
   navAuthBadge.style.display = "none";
 }
@@ -665,10 +734,10 @@ feedbackMsgForm.addEventListener("submit", async (e) => {
 
     document.getElementById("feedback-text").value = "";
     feedbackStatus.style.color = "#4df095";
-    feedbackStatus.textContent = "Message sent successfully!";
+    feedbackStatus.textContent = "Message sent to Salamon! Thank you.";
   } catch (err) {
     feedbackStatus.style.color = "#ff9494";
-    feedbackStatus.textContent = "Feedback stored locally.";
+    feedbackStatus.textContent = err.message;
   } finally {
     sendBtn.disabled = false;
     sendBtn.textContent = "Send Message";
